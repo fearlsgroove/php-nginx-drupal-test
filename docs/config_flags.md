@@ -20,7 +20,7 @@ The following flags are a list of all the currently supported options that can b
 
 | Name                    | Description                                                                                                    |
 |-------------------------|----------------------------------------------------------------------------------------------------------------|
-| WEBROOT                 | Change the default webroot directory from `/var/www/html` to your own setting                                  |
+| WEBROOT                 | Change the default webroot directory from `/srv/www` to your own setting                                  |
 | ERRORS                  | Set to 1 to display PHP Errors in the browser                                                                  |
 | HIDE_NGINX_HEADERS      | Disable by setting to 0, default behaviour is to hide nginx + php version in headers                           |
 | PHP_MEM_LIMIT           | Set higher PHP memory limit, default is 128 Mb                                                                 |
@@ -33,7 +33,7 @@ The following flags are a list of all the currently supported options that can b
 | RUN_SCRIPTS             | Set to 1 to execute scripts                                                                                    |
 | PGID                    | Set to GroupId you want to use for nginx (helps permissions when using local volume)                           |
 | PUID                    | Set to UserID you want to use for nginx (helps permissions when using local volume)                            |
-| REMOVE_FILES            | Use REMOVE_FILES=0 to prevent the script from clearing out /var/www/html (useful for working with local files) |
+| REMOVE_FILES            | Use REMOVE_FILES=0 to prevent the script from clearing out /srv/www (useful for working with local files) |
 | APPLICATION_ENV         | Set this to development to prevent composer deleting local development dependencies                            |
-| SKIP_CHOWN              | Set to 1 to avoid running chown -Rf on /var/www/html                                                           |
+| SKIP_CHOWN              | Set to 1 to avoid running chown -Rf on /srv/www                                                           |
 | SKIP_COMPOSER           | Set to 1 to avoid installing composer                                                                          |

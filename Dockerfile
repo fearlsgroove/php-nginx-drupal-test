@@ -1,4 +1,4 @@
-FROM php:7.2.10-fpm-alpine
+FROM php:5.6-fpm-alpine
 
 LABEL maintainer="Ric Harvey <ric@ngd.io>"
 
@@ -66,7 +66,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
     --add-module=/usr/src/lua-nginx-module-$LUA_MODULE_VERSION \
   " \
   && addgroup -S nginx \
-  && adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \ 
+  && adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
   && apk add --no-cache --virtual .build-deps \
     autoconf \
     gcc \
@@ -105,7 +105,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
   && tar -zxC /usr/src -f nginx.tar.gz \
   && tar -zxC /usr/src -f ndk.tar.gz \
   && tar -zxC /usr/src -f lua.tar.gz \
-  && rm nginx.tar.gz ndk.tar.gz lua.tar.gz \ 
+  && rm nginx.tar.gz ndk.tar.gz lua.tar.gz \
   && cd /usr/src/nginx-$NGINX_VERSION \
   && ./configure $CONFIG --with-debug \
   && make -j$(getconf _NPROCESSORS_ONLN) \
@@ -197,7 +197,6 @@ RUN echo @testing http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repo
     #curl iconv session
     #docker-php-ext-install pdo_mysql pdo_sqlite mysqli mcrypt gd exif intl xsl json soap dom zip opcache && \
     docker-php-ext-install iconv pdo_mysql pdo_sqlite mysqli gd exif intl xsl json soap dom zip opcache && \
-    pecl install xdebug-2.6.0 && \
     docker-php-source delete && \
     mkdir -p /etc/nginx && \
     mkdir -p /var/www/app && \
@@ -215,6 +214,8 @@ RUN echo @testing http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repo
 #    apk del .sys-deps
 #    ln -s /usr/bin/php7 /usr/bin/php
 
+RUN apk add --no-cache mysql-client
+
 ADD conf/supervisord.conf /etc/supervisord.conf
 
 # Copy our nginx config
@@ -226,7 +227,7 @@ RUN mkdir -p /etc/nginx/sites-available/ && \
 mkdir -p /etc/nginx/sites-enabled/ && \
 mkdir -p /etc/nginx/ssl/ && \
 rm -Rf /var/www/* && \
-mkdir /var/www/html/
+mkdir /srv/www/
 ADD conf/nginx-site.conf /etc/nginx/sites-available/default.conf
 ADD conf/nginx-site-ssl.conf /etc/nginx/sites-available/default-ssl.conf
 RUN ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
@@ -236,7 +237,8 @@ RUN echo "cgi.fix_pathinfo=0" > ${php_vars} &&\
     echo "upload_max_filesize = 100M"  >> ${php_vars} &&\
     echo "post_max_size = 100M"  >> ${php_vars} &&\
     echo "variables_order = \"EGPCS\""  >> ${php_vars} && \
-    echo "memory_limit = 128M"  >> ${php_vars} && \
+    echo "memory_limit = 512M"  >> ${php_vars} && \
+    echo "sendmail_path = /bin/true" >> ${php_vars} && \
     sed -i \
         -e "s/;catch_workers_output\s*=\s*yes/catch_workers_output = yes/g" \
         -e "s/pm.max_children = 5/pm.max_children = 4/g" \
@@ -255,7 +257,6 @@ RUN echo "cgi.fix_pathinfo=0" > ${php_vars} &&\
 #    ln -s /etc/php7/php.ini /etc/php7/conf.d/php.ini && \
 #    find /etc/php7/conf.d/ -name "*.ini" -exec sed -i -re 's/^(\s*)#(.*)/\1;\2/g' {} \;
 
-
 # Add Scripts
 ADD scripts/start.sh /start.sh
 ADD scripts/pull /usr/bin/pull
@@ -265,11 +266,12 @@ ADD scripts/letsencrypt-renew /usr/bin/letsencrypt-renew
 RUN chmod 755 /usr/bin/pull && chmod 755 /usr/bin/push && chmod 755 /usr/bin/letsencrypt-setup && chmod 755 /usr/bin/letsencrypt-renew && chmod 755 /start.sh
 
 # copy in code
-ADD src/ /var/www/html/
+ADD src/ /srv/www/
 ADD errors/ /var/www/errors
-
+ADD https://github.com/drush-ops/drush/releases/download/8.1.17/drush.phar /bin/drush
+RUN chmod 755 /bin/drush
 
 EXPOSE 443 80
 
-WORKDIR "/var/www/html"
+WORKDIR "/srv/www"
 CMD ["/start.sh"]

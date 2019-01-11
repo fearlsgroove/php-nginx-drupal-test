@@ -11,10 +11,10 @@ if [ -z "$GIT_NAME" ]; then
 fi
 
 # Try auto install for composer
-if [ -f "/var/www/html/composer.lock" ]; then
-  composer install --no-dev --working-dir=/var/www/html
+if [ -f "/srv/www/composer.lock" ]; then
+  composer install --no-dev --working-dir=/srv/www
 fi
 
-cd /var/www/html
+cd /srv/www
 git pull || exit 1
-chown -Rf nginx:nginx /var/www/html
+chown -Rf nginx:nginx /srv/www
